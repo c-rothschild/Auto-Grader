@@ -1,23 +1,45 @@
 import subprocess
 from subprocess import Popen, PIPE, STDOUT
 import os
+import io
 import glob
 
 """
 This is the code I use for automating the grading process as a Computer Science grader at colorado college
 """
 
-def run_file(f, userin):
+def run_file(file_path, user_input):
     """
-    run a file with a list of user input
+    Run a file with a list of user inputs.
     """
-    print(f"{f[f.index("/") + 1:]} is running")
-    proc = subprocess.Popen(
-        ["python", f], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True
-    )
-    grep_stdout = proc.communicate(input=userin)[0]
-    print('\n'.join(grep_stdout.splitlines()))
-    input()
+    try:
+        print(f"{os.path.basename(file_path)} is running")
+        proc = Popen(
+            ["python", file_path], stdout=PIPE, stdin=PIPE, stderr=STDOUT, text=True
+        )
+        
+        output, _ = proc.communicate(input=user_input)
+        for line in output.splitlines():
+            print(line)
+    except Exception as e:
+        print(f"An error occurred while running the file: {e}")
+    finally:
+        rerun_file(file_path)
+
+def rerun_file(file_path):
+    while True:
+        user_input = input("Type 'rerun' to rerun code without inputs or 'exit' to quit: ").strip().lower()
+        if user_input == 'rerun':
+            os.system('clear')
+            try:
+                print(f"{os.path.basename(file_path)} is running")
+                subprocess.run(["python", file_path])
+            except Exception as e:
+                print(f"An error occurred while rerunning the file: {e}")
+        elif user_input == 'exit':
+            break
+        else:
+            print("Invalid input. Please type 'rerun' or 'exit'.")
 
 def custom_run(directory, command_map):
     """
